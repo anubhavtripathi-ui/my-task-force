@@ -59,6 +59,17 @@ if "authenticated" not in st.session_state:
 # ---------- CSS ----------
 def inject_css():
     t = THEMES[st.session_state.theme]
+    is_glass = st.session_state.theme == "Glass Gradient"
+    app_bg = (
+        "radial-gradient(circle at 12% 8%, rgba(182,108,255,.28), transparent 30%), "
+        "radial-gradient(circle at 88% 12%, rgba(67,221,255,.20), transparent 28%), "
+        "linear-gradient(135deg, #151126 0%, #101b35 52%, #17112b 100%)"
+        if is_glass else
+        "radial-gradient(circle at 10% 0%, rgba(124,92,255,.16), transparent 26%), "
+        "radial-gradient(circle at 90% 8%, rgba(0,212,255,.10), transparent 24%), "
+        "var(--bg)"
+    )
+    panel_effect = "backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);" if is_glass else ""
     st.markdown(f"""
     <style>
     :root {{
@@ -67,52 +78,107 @@ def inject_css():
       --accent2:{t["accent2"]}; --danger:{t["danger"]}; --border:{t["border"]};
     }}
     .stApp {{
-      background:
-        radial-gradient(circle at 10% 0%, rgba(124,92,255,.18), transparent 28%),
-        radial-gradient(circle at 90% 10%, rgba(0,212,255,.12), transparent 25%),
-        var(--bg);
+      background:{app_bg};
       color:var(--text);
     }}
-    [data-testid="stHeader"] {{ background: transparent; }}
-    [data-testid="stSidebar"] {{ background: var(--panel); }}
-    h1,h2,h3,h4,p,span,label {{ color:var(--text); }}
+    [data-testid="stHeader"] {{ background:transparent; }}
+    [data-testid="stMainBlockContainer"] {{
+      max-width: 1450px;
+      padding-top: 1rem;
+      padding-bottom: 2rem;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }}
+    [data-testid="stSidebar"] {{ background:var(--panel); {panel_effect} }}
+    h1,h2,h3,h4 {{ color:var(--text) !important; }}
+    p, label, [data-testid="stMarkdownContainer"] {{ color:var(--text); }}
     .hero {{
-      padding: 20px 24px; border:1px solid var(--border); border-radius:24px;
-      background:linear-gradient(135deg, rgba(124,92,255,.22), rgba(0,212,255,.10));
-      margin-bottom:18px;
+      padding:14px 18px;
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:linear-gradient(135deg, rgba(124,92,255,.20), rgba(0,212,255,.08));
+      margin-bottom:12px;
+      {panel_effect}
     }}
-    .hero-title {{ font-size:34px; font-weight:800; letter-spacing:-1px; }}
-    .hero-sub {{ color:var(--muted); margin-top:4px; }}
+    .hero-title {{ font-size:28px; line-height:1.1; font-weight:800; letter-spacing:-.7px; }}
+    .hero-sub {{ color:var(--muted) !important; margin-top:3px; font-size:13px; }}
     .metric {{
-      border:1px solid var(--border); border-radius:18px; padding:15px;
-      background:var(--card); min-height:100px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px 14px;
+      background:var(--card);
+      min-height:78px;
+      {panel_effect}
     }}
-    .metric-num {{ font-size:27px; font-weight:800; }}
-    .metric-label {{ color:var(--muted); font-size:13px; }}
+    .metric-num {{ font-size:23px; line-height:1.05; font-weight:800; color:var(--text); }}
+    .metric-label {{ color:var(--muted) !important; font-size:12px; margin-top:4px; }}
     .task-card {{
-      border:1px solid var(--border); border-radius:18px; padding:15px 16px;
-      background:var(--card); margin:8px 0;
-      box-shadow:0 8px 24px rgba(0,0,0,.10);
+      border:1px solid var(--border);
+      border-radius:15px;
+      padding:12px 14px;
+      background:var(--card);
+      margin:7px 0;
+      box-shadow:0 6px 18px rgba(0,0,0,.08);
+      {panel_effect}
     }}
-    .task-title {{ font-size:17px; font-weight:750; }}
-    .task-desc {{ color:var(--muted); font-size:14px; margin-top:5px; }}
-    .task-meta {{ color:var(--muted); font-size:12px; margin-top:8px; }}
+    .task-title {{ font-size:16px; font-weight:750; color:var(--text); margin-top:5px; }}
+    .task-desc {{ color:var(--muted) !important; font-size:13px; margin-top:4px; }}
+    .task-meta {{ color:var(--muted) !important; font-size:11px; margin-top:7px; }}
     .urgent {{
-      border-color: rgba(255,92,138,.65);
-      box-shadow: 0 0 0 1px rgba(255,92,138,.08), 0 8px 28px rgba(255,92,138,.08);
+      border-color:rgba(255,92,138,.65);
+      box-shadow:0 0 0 1px rgba(255,92,138,.08), 0 7px 22px rgba(255,92,138,.08);
     }}
     .done .task-title {{ text-decoration:line-through; opacity:.65; }}
     .chip {{
-      display:inline-block; padding:4px 9px; border-radius:999px;
-      background:rgba(124,92,255,.15); color:var(--text); font-size:11px;
-      border:1px solid var(--border); margin-right:5px;
+      display:inline-block;
+      padding:3px 8px;
+      border-radius:999px;
+      background:rgba(124,92,255,.16);
+      color:var(--text);
+      font-size:10px;
+      border:1px solid var(--border);
+      margin-right:4px;
     }}
     .urgent-chip {{ background:rgba(255,92,138,.16); }}
-    .section-title {{ font-size:21px; font-weight:800; margin:12px 0 5px; }}
-    .small-muted {{ color:var(--muted); font-size:12px; }}
-    button[kind="primary"] {{
-      border-radius:12px !important;
+    .section-title {{ font-size:19px; font-weight:800; margin:12px 0 6px; color:var(--text); }}
+    .small-muted {{ color:var(--muted) !important; font-size:12px; }}
+
+    /* Make native Streamlit controls readable in every theme. */
+    div[data-baseweb="select"] > div,
+    div[data-baseweb="input"],
+    textarea,
+    input {{
+      background:var(--card) !important;
+      color:var(--text) !important;
+      border-color:var(--border) !important;
     }}
+    div[data-baseweb="select"] *,
+    div[data-baseweb="input"] *,
+    textarea,
+    input {{
+      color:var(--text) !important;
+    }}
+    [data-baseweb="popover"] {{
+      background:var(--panel) !important;
+      color:var(--text) !important;
+    }}
+    [data-baseweb="popover"] * {{ color:var(--text) !important; }}
+    button {{
+      color:var(--text) !important;
+      border-color:var(--border) !important;
+    }}
+    button[kind="primary"] {{
+      background:var(--accent) !important;
+      color:#fff !important;
+      border-radius:10px !important;
+    }}
+    div[role="radiogroup"] {{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:3px 7px;
+    }}
+    div[role="radiogroup"] label {{ color:var(--text) !important; }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -190,7 +256,7 @@ def delete_task(task_id):
 tasks = load_tasks()
 
 # ---------- Header ----------
-top1, top2 = st.columns([4, 1])
+top1, top2 = st.columns([5, 2], vertical_alignment="center")
 with top1:
     st.markdown("""
     <div class="hero">
@@ -199,14 +265,22 @@ with top1:
     </div>
     """, unsafe_allow_html=True)
 with top2:
-    theme = st.selectbox("Theme", list(THEMES.keys()), index=list(THEMES.keys()).index(st.session_state.theme))
+    theme = st.selectbox("Theme", list(THEMES.keys()), index=list(THEMES.keys()).index(st.session_state.theme), key="theme_selector")
     if theme != st.session_state.theme:
         st.session_state.theme = theme
         st.rerun()
 
 # ---------- Navigation ----------
 pages = ["Dashboard", "Home", "Office", "Outside", "Personal Goals", "Urgent", "Upcoming", "Completed"]
-page = st.radio("Navigation", pages, horizontal=True, label_visibility="collapsed")
+page = st.segmented_control(
+    "Navigation",
+    pages,
+    default="Dashboard",
+    key="page_nav",
+    label_visibility="collapsed",
+    width="stretch",
+)
+
 
 # ---------- Helpers ----------
 def parse_due(task):
@@ -329,9 +403,16 @@ if page == "Dashboard":
     st.markdown('<div class="section-title">Quick Access</div>', unsafe_allow_html=True)
     cols = st.columns(4)
     for col, (cat, icon) in zip(cols, CATEGORIES.items()):
-        count = len([t for t in pending if t.get("category")==cat])
+        count = len([t for t in pending if t.get("category") == cat])
         with col:
-            st.markdown(f'<div class="metric"><div class="metric-num">{icon}</div><div class="metric-label">{cat} · {count} pending</div></div>', unsafe_allow_html=True)
+            st.markdown(
+                f'<div class="metric"><div class="metric-num">{icon}</div><div class="metric-label">{cat} · {count} pending</div></div>',
+                unsafe_allow_html=True
+            )
+            if st.button(f"Open {cat}", key=f"open_cat_{cat}", use_container_width=True):
+                st.session_state["page_nav"] = cat
+                st.rerun()
+
 
     st.markdown('<div class="section-title">Next Up</div>', unsafe_allow_html=True)
     for i,t in enumerate(sorted(upcoming, key=lambda x: parse_due(x) or datetime.max)[:6]):
