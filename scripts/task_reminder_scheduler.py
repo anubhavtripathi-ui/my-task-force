@@ -17,15 +17,8 @@ IST = timezone(timedelta(hours=5, minutes=30))
 now = datetime.now(timezone.utc)
 window_end = now + timedelta(days=3)
 
-params = {
-    "select": "id,title,due_at,status",
-    "status": "eq.todo",
-    "due_at": f"gte.{now.isoformat()}",
-    "due_at": f"gte.{now.isoformat()}",
-}
-
-# Supabase/PostgREST query parameters cannot contain the same key twice,
-# so construct the URL explicitly for the upper bound.
+# Construct the URL explicitly because the same PostgREST filter key
+# is used for both the lower and upper due_at bounds.
 url = (
     f"{SUPABASE_URL}/rest/v1/tasks"
     f"?select=id,title,due_at,status"
