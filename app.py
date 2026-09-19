@@ -540,6 +540,8 @@ with top2:
     if theme != st.session_state.theme:
         st.session_state.theme = theme
         st.rerun()
+    if st.button("↻ Check reminders", use_container_width=True):
+        st.rerun()
 
 # ---------- Navigation ----------
 pages = ["Dashboard", "Home", "Office", "Outside", "Personal Goals", "Urgent", "Upcoming", "Completed"]
