@@ -456,6 +456,55 @@ def delete_task(task_id):
 
 tasks = load_tasks()
 
+
+# ---------- In-app notifications ----------
+def render_notifications():
+    pending = [t for t in tasks if t.get("status") != "completed"]
+    now = local_now()
+    overdue = []
+    due_soon = []
+    for t in pending:
+        due = parse_due(t)
+        if not due:
+            continue
+        if due < now:
+            overdue.append((t, due))
+        elif due <= now + timedelta(minutes=15):
+            due_soon.append((t, due))
+
+    total_alerts = len(overdue) + len(due_soon)
+    if total_alerts:
+        st.markdown(
+            f'<div class="notification-bar"><b>🔔 Notifications ({total_alerts})</b>'
+            f'<span> {len(overdue)} overdue · {len(due_soon)} due within 15 min</span></div>',
+            unsafe_allow_html=True,
+        )
+
+        if overdue:
+            st.error(
+                "🔴 **Overdue tasks** — " +
+                " · ".join(
+                    f'**{t.get("title","")}** ({max(1, int((now-due).total_seconds()//60))} min overdue)'
+                    for t, due in sorted(overdue, key=lambda x: x[1])
+                )
+            )
+
+        if due_soon:
+            st.warning(
+                "🟠 **Due soon** — " +
+                " · ".join(
+                    f'**{t.get("title","")}** ({max(1, int((due-now).total_seconds()//60))} min)'
+                    for t, due in sorted(due_soon, key=lambda x: x[1])
+                )
+            )
+    else:
+        st.markdown(
+            '<div class="notification-bar quiet"><b>🔔 Notifications</b><span> No active reminders</span></div>',
+            unsafe_allow_html=True,
+        )
+
+render_notifications()
+
 # ---------- Header ----------
 top1, top2 = st.columns([5, 2], vertical_alignment="center")
 with top1:
