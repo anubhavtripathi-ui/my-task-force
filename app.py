@@ -60,33 +60,34 @@ if "authenticated" not in st.session_state:
 def inject_css():
     t = THEMES[st.session_state.theme]
     glass = st.session_state.theme == "Glass Gradient"
-    dark_mode = st.session_state.theme == "Dark Neon"
+    dark = st.session_state.theme == "Dark Neon"
+
     if glass:
-        app_bg = "linear-gradient(135deg,#17132b 0%,#101a34 48%,#15253a 100%)"
+        app_bg = "linear-gradient(135deg,#111425 0%,#17152d 45%,#10263a 100%)"
         surface = "rgba(255,255,255,.075)"
-        control_bg = "rgba(255,255,255,.96)"
+        control_bg = "#f7f8fb"
         control_text = "#182033"
-        control_border = "rgba(255,255,255,.30)"
-    elif dark_mode:
-        app_bg = "#0a0f1c"
-        surface = "#121a2b"
-        control_bg = "#f4f6fa"
-        control_text = "#182033"
-        control_border = "#c8d0dc"
+        border = "rgba(255,255,255,.18)"
+    elif dark:
+        app_bg = "#080d18"
+        surface = "#111827"
+        control_bg = "#f5f7fa"
+        control_text = "#172033"
+        border = "#2b3852"
     else:
         app_bg = "#f5f7fb"
         surface = "#ffffff"
         control_bg = "#ffffff"
-        control_text = "#182033"
-        control_border = "#cfd7e3"
+        control_text = "#172033"
+        border = "#d9e0ea"
 
     st.markdown(f"""
     <style>
     :root {{
       --bg:{app_bg}; --surface:{surface}; --card:{t["card"]};
       --text:{t["text"]}; --muted:{t["muted"]}; --accent:{t["accent"]};
-      --accent2:{t["accent2"]}; --danger:{t["danger"]}; --border:{t["border"]};
-      --control-bg:{control_bg}; --control-text:{control_text}; --control-border:{control_border};
+      --accent2:{t["accent2"]}; --danger:{t["danger"]};
+      --border:{border}; --control-bg:{control_bg}; --control-text:{control_text};
     }}
 
     .stApp {{
@@ -95,11 +96,11 @@ def inject_css():
     }}
 
     [data-testid="stMainBlockContainer"] {{
-      max-width:1400px !important;
-      padding-top:1rem !important;
-      padding-bottom:2rem !important;
-      padding-left:1.25rem !important;
-      padding-right:1.25rem !important;
+      max-width:1380px !important;
+      padding-top:.8rem !important;
+      padding-bottom:1.5rem !important;
+      padding-left:1.2rem !important;
+      padding-right:1.2rem !important;
     }}
 
     [data-testid="stHeader"] {{ background:transparent !important; }}
@@ -109,113 +110,52 @@ def inject_css():
       color:var(--text) !important;
     }}
 
+    /* Header */
     .hero {{
-      padding:16px 20px !important;
+      padding:15px 19px !important;
       border:1px solid var(--border) !important;
-      border-radius:16px !important;
-      background:linear-gradient(110deg,rgba(99,91,255,.18),rgba(0,168,204,.08)) !important;
-      margin-bottom:10px !important;
+      border-radius:15px !important;
+      background:linear-gradient(110deg,rgba(99,91,255,.18),rgba(0,168,204,.07)) !important;
+      margin-bottom:9px !important;
     }}
     .hero-title {{
-      font-size:27px !important;
+      font-size:26px !important;
       line-height:1.1 !important;
       font-weight:800 !important;
-      letter-spacing:-.6px !important;
+      letter-spacing:-.5px !important;
     }}
     .hero-sub {{
       color:var(--muted) !important;
-      margin-top:4px !important;
+      margin-top:3px !important;
       font-size:12px !important;
     }}
 
-    .section-title {{
-      font-size:18px !important;
-      font-weight:750 !important;
-      margin:12px 0 6px !important;
-      color:var(--text) !important;
-    }}
-
-    .metric {{
-      border:1px solid var(--border) !important;
-      border-radius:13px !important;
-      padding:11px 13px !important;
-      background:var(--surface) !important;
-      min-height:72px !important;
-    }}
-    .metric-num {{
-      font-size:22px !important;
-      line-height:1.05 !important;
-      font-weight:800 !important;
-      color:var(--text) !important;
-    }}
-    .metric-label {{
-      color:var(--muted) !important;
-      font-size:12px !important;
-      margin-top:4px !important;
-    }}
-
-    .task-card {{
-      border:1px solid var(--border) !important;
-      border-radius:14px !important;
-      padding:12px 14px !important;
-      background:var(--surface) !important;
-      margin:6px 0 !important;
-      box-shadow:0 5px 16px rgba(0,0,0,.07) !important;
-    }}
-    .task-title {{
-      font-size:16px !important;
-      font-weight:700 !important;
-      color:var(--text) !important;
-      margin-top:5px !important;
-    }}
-    .task-desc {{
-      color:var(--muted) !important;
-      font-size:13px !important;
-      margin-top:4px !important;
-    }}
-    .task-meta {{
-      color:var(--muted) !important;
-      font-size:11px !important;
-      margin-top:7px !important;
-    }}
-
-    .chip {{
-      display:inline-block !important;
-      padding:3px 8px !important;
-      border-radius:999px !important;
-      background:rgba(99,91,255,.14) !important;
-      color:var(--text) !important;
-      font-size:10px !important;
-      border:1px solid var(--border) !important;
-    }}
-    .urgent-chip {{ background:rgba(220,66,104,.15) !important; }}
-
-    /* Navigation: dark professional pill, clearly readable and clickable. */
+    /* Navigation */
     div[role="radiogroup"] {{
       display:flex !important;
       flex-wrap:nowrap !important;
-      gap:3px !important;
+      gap:2px !important;
       width:100% !important;
-      padding:4px !important;
-      margin:4px 0 10px !important;
+      padding:3px !important;
+      margin:2px 0 10px !important;
       border:1px solid var(--border) !important;
-      border-radius:12px !important;
+      border-radius:11px !important;
       background:var(--surface) !important;
     }}
     div[role="radiogroup"] > label {{
       flex:1 1 0 !important;
       justify-content:center !important;
-      min-height:34px !important;
-      padding:5px 8px !important;
+      min-height:32px !important;
+      padding:4px 7px !important;
       border-radius:8px !important;
       color:var(--text) !important;
       background:transparent !important;
-      font-size:12px !important;
-      font-weight:600 !important;
+      font-size:11px !important;
+      font-weight:650 !important;
       cursor:pointer !important;
     }}
     div[role="radiogroup"] > label:hover {{
-      background:rgba(99,91,255,.16) !important;
+      background:rgba(99,91,255,.13) !important;
     }}
     div[role="radiogroup"] > label:has(input:checked) {{
       background:var(--accent) !important;
@@ -228,44 +168,109 @@ def inject_css():
       display:none !important;
     }}
 
-    /* All form controls use a high-contrast light surface. */
-    div[data-baseweb="input"],
+    /* Theme selector and all inputs */
     div[data-baseweb="select"] > div,
+    div[data-baseweb="input"],
     textarea,
     input {{
       background:var(--control-bg) !important;
       color:var(--control-text) !important;
-      border-color:var(--control-border) !important;
+      border:1px solid #cbd3df !important;
       border-radius:9px !important;
     }}
-    div[data-baseweb="input"] *,
     div[data-baseweb="select"] *,
+    div[data-baseweb="input"] *,
     textarea,
     input {{
       color:var(--control-text) !important;
     }}
     textarea::placeholder,
     input::placeholder {{
-      color:#788398 !important;
+      color:#7a8597 !important;
       opacity:1 !important;
     }}
     [data-baseweb="popover"] {{
       background:#ffffff !important;
-      color:#182033 !important;
+      color:#172033 !important;
+      border:1px solid #d7dee8 !important;
     }}
     [data-baseweb="popover"] * {{
-      color:#182033 !important;
+      color:#172033 !important;
     }}
 
-    /* Streamlit buttons */
+    /* Section / metrics */
+    .section-title {{
+      font-size:18px !important;
+      font-weight:750 !important;
+      margin:11px 0 6px !important;
+      color:var(--text) !important;
+    }}
+    .metric {{
+      border:1px solid var(--border) !important;
+      border-radius:12px !important;
+      padding:10px 12px !important;
+      background:var(--surface) !important;
+      min-height:68px !important;
+    }}
+    .metric-num {{
+      font-size:21px !important;
+      line-height:1.05 !important;
+      font-weight:800 !important;
+    }}
+    .metric-label {{
+      color:var(--muted) !important;
+      font-size:11px !important;
+      margin-top:3px !important;
+    }}
+
+    /* Tasks */
+    .task-card {{
+      border:1px solid var(--border) !important;
+      border-radius:13px !important;
+      padding:11px 13px !important;
+      background:var(--surface) !important;
+      margin:5px 0 !important;
+      box-shadow:0 4px 14px rgba(0,0,0,.07) !important;
+    }}
+    .task-title {{
+      font-size:15px !important;
+      font-weight:700 !important;
+      color:var(--text) !important;
+      margin-top:5px !important;
+    }}
+    .task-desc {{
+      color:var(--muted) !important;
+      font-size:12px !important;
+      margin-top:3px !important;
+    }}
+    .task-meta {{
+      color:var(--muted) !important;
+      font-size:10px !important;
+      margin-top:6px !important;
+    }}
+    .urgent {{
+      border-color:rgba(255,92,138,.65) !important;
+    }}
+    .chip {{
+      display:inline-block !important;
+      padding:3px 7px !important;
+      border-radius:999px !important;
+      background:rgba(99,91,255,.14) !important;
+      color:var(--text) !important;
+      font-size:9px !important;
+      border:1px solid var(--border) !important;
+    }}
+
+    /* Buttons */
     .stButton > button {{
-      min-height:36px !important;
-      border-radius:9px !important;
+      min-height:34px !important;
+      padding:5px 9px !important;
+      border-radius:8px !important;
       border:1px solid var(--border) !important;
       background:var(--surface) !important;
       color:var(--text) !important;
-      font-size:12px !important;
-      font-weight:600 !important;
+      font-size:11px !important;
+      font-weight:650 !important;
     }}
     .stButton > button:hover {{
       border-color:var(--accent) !important;
@@ -277,14 +282,20 @@ def inject_css():
       border-color:var(--accent) !important;
     }}
 
+    /* Add-task panel */
     [data-testid="stExpander"] {{
       border:1px solid var(--border) !important;
-      border-radius:12px !important;
+      border-radius:11px !important;
       background:var(--surface) !important;
+      margin-bottom:8px !important;
     }}
     [data-testid="stExpander"] summary {{
       color:var(--text) !important;
+      font-size:13px !important;
       font-weight:650 !important;
+    }}
+    [data-testid="stCaptionContainer"] p {{
+      color:var(--muted) !important;
     }}
     </style>
     """, unsafe_allow_html=True)
