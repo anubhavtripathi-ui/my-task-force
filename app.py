@@ -478,6 +478,48 @@ def delete_task(task_id):
 tasks = load_tasks()
 
 
+# ---------- Header ----------
+top1, top2 = st.columns([5, 2], vertical_alignment="center")
+with top1:
+    st.markdown("""
+    <div class="hero">
+      <div class="hero-title">⚡ My Task Force</div>
+      <div class="hero-sub">Plan it. Do it. Tick it off.</div>
+    </div>
+    """, unsafe_allow_html=True)
+with top2:
+    theme = st.selectbox("Theme", list(THEMES.keys()), index=list(THEMES.keys()).index(st.session_state.theme), key="theme_selector", label_visibility="visible")
+    if theme != st.session_state.theme:
+        st.session_state.theme = theme
+        st.rerun()
+    if st.button("↻ Check reminders", use_container_width=True):
+        st.rerun()
+
+# ---------- Navigation ----------
+pages = ["Dashboard", "Home", "Office", "Outside", "Personal Goals", "Urgent", "Upcoming", "Completed"]
+page = st.radio(
+    "Navigation",
+    pages,
+    index=0,
+    key="page_nav",
+    horizontal=True,
+    label_visibility="collapsed",
+)
+
+
+# ---------- Helpers ----------
+def parse_due(task):
+    raw = task.get("due_at")
+    if not raw:
+        return None
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            return parsed.replace(tzinfo=IST)
+        return parsed.astimezone(IST)
+    except Exception:
+        return None
+
 # ---------- In-app notifications ----------
 def render_notifications():
     pending = [t for t in tasks if t.get("status") != "completed"]
@@ -525,48 +567,6 @@ def render_notifications():
         )
 
 render_notifications()
-
-# ---------- Header ----------
-top1, top2 = st.columns([5, 2], vertical_alignment="center")
-with top1:
-    st.markdown("""
-    <div class="hero">
-      <div class="hero-title">⚡ My Task Force</div>
-      <div class="hero-sub">Plan it. Do it. Tick it off.</div>
-    </div>
-    """, unsafe_allow_html=True)
-with top2:
-    theme = st.selectbox("Theme", list(THEMES.keys()), index=list(THEMES.keys()).index(st.session_state.theme), key="theme_selector", label_visibility="visible")
-    if theme != st.session_state.theme:
-        st.session_state.theme = theme
-        st.rerun()
-    if st.button("↻ Check reminders", use_container_width=True):
-        st.rerun()
-
-# ---------- Navigation ----------
-pages = ["Dashboard", "Home", "Office", "Outside", "Personal Goals", "Urgent", "Upcoming", "Completed"]
-page = st.radio(
-    "Navigation",
-    pages,
-    index=0,
-    key="page_nav",
-    horizontal=True,
-    label_visibility="collapsed",
-)
-
-
-# ---------- Helpers ----------
-def parse_due(task):
-    raw = task.get("due_at")
-    if not raw:
-        return None
-    try:
-        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
-        if parsed.tzinfo is None:
-            return parsed.replace(tzinfo=IST)
-        return parsed.astimezone(IST)
-    except Exception:
-        return None
 
 def visible_tasks(page_name):
     if page_name in CATEGORIES:
