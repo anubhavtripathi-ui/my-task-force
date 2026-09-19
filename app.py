@@ -59,126 +59,233 @@ if "authenticated" not in st.session_state:
 # ---------- CSS ----------
 def inject_css():
     t = THEMES[st.session_state.theme]
-    is_glass = st.session_state.theme == "Glass Gradient"
-    app_bg = (
-        "radial-gradient(circle at 12% 8%, rgba(182,108,255,.28), transparent 30%), "
-        "radial-gradient(circle at 88% 12%, rgba(67,221,255,.20), transparent 28%), "
-        "linear-gradient(135deg, #151126 0%, #101b35 52%, #17112b 100%)"
-        if is_glass else
-        "radial-gradient(circle at 10% 0%, rgba(124,92,255,.16), transparent 26%), "
-        "radial-gradient(circle at 90% 8%, rgba(0,212,255,.10), transparent 24%), "
-        "var(--bg)"
-    )
-    panel_effect = "backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);" if is_glass else ""
+    glass = st.session_state.theme == "Glass Gradient"
+    dark_mode = st.session_state.theme == "Dark Neon"
+    if glass:
+        app_bg = "linear-gradient(135deg,#17132b 0%,#101a34 48%,#15253a 100%)"
+        surface = "rgba(255,255,255,.075)"
+        control_bg = "rgba(255,255,255,.96)"
+        control_text = "#182033"
+        control_border = "rgba(255,255,255,.30)"
+    elif dark_mode:
+        app_bg = "#0a0f1c"
+        surface = "#121a2b"
+        control_bg = "#f4f6fa"
+        control_text = "#182033"
+        control_border = "#c8d0dc"
+    else:
+        app_bg = "#f5f7fb"
+        surface = "#ffffff"
+        control_bg = "#ffffff"
+        control_text = "#182033"
+        control_border = "#cfd7e3"
+
     st.markdown(f"""
     <style>
     :root {{
-      --bg:{t["bg"]}; --panel:{t["panel"]}; --card:{t["card"]};
+      --bg:{app_bg}; --surface:{surface}; --card:{t["card"]};
       --text:{t["text"]}; --muted:{t["muted"]}; --accent:{t["accent"]};
       --accent2:{t["accent2"]}; --danger:{t["danger"]}; --border:{t["border"]};
+      --control-bg:{control_bg}; --control-text:{control_text}; --control-border:{control_border};
     }}
-    .stApp {{
-      background:{app_bg};
-      color:var(--text);
-    }}
-    [data-testid="stHeader"] {{ background:transparent; }}
-    [data-testid="stMainBlockContainer"] {{
-      max-width: 1450px;
-      padding-top: 1rem;
-      padding-bottom: 2rem;
-      padding-left: 1.5rem;
-      padding-right: 1.5rem;
-    }}
-    [data-testid="stSidebar"] {{ background:var(--panel); {panel_effect} }}
-    h1,h2,h3,h4 {{ color:var(--text) !important; }}
-    p, label, [data-testid="stMarkdownContainer"] {{ color:var(--text); }}
-    .hero {{
-      padding:14px 18px;
-      border:1px solid var(--border);
-      border-radius:18px;
-      background:linear-gradient(135deg, rgba(124,92,255,.20), rgba(0,212,255,.08));
-      margin-bottom:12px;
-      {panel_effect}
-    }}
-    .hero-title {{ font-size:28px; line-height:1.1; font-weight:800; letter-spacing:-.7px; }}
-    .hero-sub {{ color:var(--muted) !important; margin-top:3px; font-size:13px; }}
-    .metric {{
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:12px 14px;
-      background:var(--card);
-      min-height:78px;
-      {panel_effect}
-    }}
-    .metric-num {{ font-size:23px; line-height:1.05; font-weight:800; color:var(--text); }}
-    .metric-label {{ color:var(--muted) !important; font-size:12px; margin-top:4px; }}
-    .task-card {{
-      border:1px solid var(--border);
-      border-radius:15px;
-      padding:12px 14px;
-      background:var(--card);
-      margin:7px 0;
-      box-shadow:0 6px 18px rgba(0,0,0,.08);
-      {panel_effect}
-    }}
-    .task-title {{ font-size:16px; font-weight:750; color:var(--text); margin-top:5px; }}
-    .task-desc {{ color:var(--muted) !important; font-size:13px; margin-top:4px; }}
-    .task-meta {{ color:var(--muted) !important; font-size:11px; margin-top:7px; }}
-    .urgent {{
-      border-color:rgba(255,92,138,.65);
-      box-shadow:0 0 0 1px rgba(255,92,138,.08), 0 7px 22px rgba(255,92,138,.08);
-    }}
-    .done .task-title {{ text-decoration:line-through; opacity:.65; }}
-    .chip {{
-      display:inline-block;
-      padding:3px 8px;
-      border-radius:999px;
-      background:rgba(124,92,255,.16);
-      color:var(--text);
-      font-size:10px;
-      border:1px solid var(--border);
-      margin-right:4px;
-    }}
-    .urgent-chip {{ background:rgba(255,92,138,.16); }}
-    .section-title {{ font-size:19px; font-weight:800; margin:12px 0 6px; color:var(--text); }}
-    .small-muted {{ color:var(--muted) !important; font-size:12px; }}
 
-    /* Make native Streamlit controls readable in every theme. */
-    div[data-baseweb="select"] > div,
-    div[data-baseweb="input"],
-    textarea,
-    input {{
-      background:var(--card) !important;
-      color:var(--text) !important;
-      border-color:var(--border) !important;
-    }}
-    div[data-baseweb="select"] *,
-    div[data-baseweb="input"] *,
-    textarea,
-    input {{
+    .stApp {{
+      background:var(--bg) !important;
       color:var(--text) !important;
     }}
-    [data-baseweb="popover"] {{
-      background:var(--panel) !important;
+
+    [data-testid="stMainBlockContainer"] {{
+      max-width:1400px !important;
+      padding-top:1rem !important;
+      padding-bottom:2rem !important;
+      padding-left:1.25rem !important;
+      padding-right:1.25rem !important;
+    }}
+
+    [data-testid="stHeader"] {{ background:transparent !important; }}
+
+    h1,h2,h3,h4,h5,p,span,label,
+    [data-testid="stMarkdownContainer"] {{
       color:var(--text) !important;
     }}
-    [data-baseweb="popover"] * {{ color:var(--text) !important; }}
-    button {{
-      color:var(--text) !important;
-      border-color:var(--border) !important;
+
+    .hero {{
+      padding:16px 20px !important;
+      border:1px solid var(--border) !important;
+      border-radius:16px !important;
+      background:linear-gradient(110deg,rgba(99,91,255,.18),rgba(0,168,204,.08)) !important;
+      margin-bottom:10px !important;
     }}
-    button[kind="primary"] {{
+    .hero-title {{
+      font-size:27px !important;
+      line-height:1.1 !important;
+      font-weight:800 !important;
+      letter-spacing:-.6px !important;
+    }}
+    .hero-sub {{
+      color:var(--muted) !important;
+      margin-top:4px !important;
+      font-size:12px !important;
+    }}
+
+    .section-title {{
+      font-size:18px !important;
+      font-weight:750 !important;
+      margin:12px 0 6px !important;
+      color:var(--text) !important;
+    }}
+
+    .metric {{
+      border:1px solid var(--border) !important;
+      border-radius:13px !important;
+      padding:11px 13px !important;
+      background:var(--surface) !important;
+      min-height:72px !important;
+    }}
+    .metric-num {{
+      font-size:22px !important;
+      line-height:1.05 !important;
+      font-weight:800 !important;
+      color:var(--text) !important;
+    }}
+    .metric-label {{
+      color:var(--muted) !important;
+      font-size:12px !important;
+      margin-top:4px !important;
+    }}
+
+    .task-card {{
+      border:1px solid var(--border) !important;
+      border-radius:14px !important;
+      padding:12px 14px !important;
+      background:var(--surface) !important;
+      margin:6px 0 !important;
+      box-shadow:0 5px 16px rgba(0,0,0,.07) !important;
+    }}
+    .task-title {{
+      font-size:16px !important;
+      font-weight:700 !important;
+      color:var(--text) !important;
+      margin-top:5px !important;
+    }}
+    .task-desc {{
+      color:var(--muted) !important;
+      font-size:13px !important;
+      margin-top:4px !important;
+    }}
+    .task-meta {{
+      color:var(--muted) !important;
+      font-size:11px !important;
+      margin-top:7px !important;
+    }}
+
+    .chip {{
+      display:inline-block !important;
+      padding:3px 8px !important;
+      border-radius:999px !important;
+      background:rgba(99,91,255,.14) !important;
+      color:var(--text) !important;
+      font-size:10px !important;
+      border:1px solid var(--border) !important;
+    }}
+    .urgent-chip {{ background:rgba(220,66,104,.15) !important; }}
+
+    /* Navigation: dark professional pill, clearly readable and clickable. */
+    div[role="radiogroup"] {{
+      display:flex !important;
+      flex-wrap:nowrap !important;
+      gap:3px !important;
+      width:100% !important;
+      padding:4px !important;
+      margin:4px 0 10px !important;
+      border:1px solid var(--border) !important;
+      border-radius:12px !important;
+      background:var(--surface) !important;
+    }}
+    div[role="radiogroup"] > label {{
+      flex:1 1 0 !important;
+      justify-content:center !important;
+      min-height:34px !important;
+      padding:5px 8px !important;
+      border-radius:8px !important;
+      color:var(--text) !important;
+      background:transparent !important;
+      font-size:12px !important;
+      font-weight:600 !important;
+      cursor:pointer !important;
+    }}
+    div[role="radiogroup"] > label:hover {{
+      background:rgba(99,91,255,.16) !important;
+    }}
+    div[role="radiogroup"] > label:has(input:checked) {{
       background:var(--accent) !important;
       color:#fff !important;
-      border-radius:10px !important;
     }}
-    div[role="radiogroup"] {{
-      background:var(--panel);
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:3px 7px;
+    div[role="radiogroup"] > label:has(input:checked) * {{
+      color:#fff !important;
     }}
-    div[role="radiogroup"] label {{ color:var(--text) !important; }}
+    div[role="radiogroup"] > label > div:first-child {{
+      display:none !important;
+    }}
+
+    /* All form controls use a high-contrast light surface. */
+    div[data-baseweb="input"],
+    div[data-baseweb="select"] > div,
+    textarea,
+    input {{
+      background:var(--control-bg) !important;
+      color:var(--control-text) !important;
+      border-color:var(--control-border) !important;
+      border-radius:9px !important;
+    }}
+    div[data-baseweb="input"] *,
+    div[data-baseweb="select"] *,
+    textarea,
+    input {{
+      color:var(--control-text) !important;
+    }}
+    textarea::placeholder,
+    input::placeholder {{
+      color:#788398 !important;
+      opacity:1 !important;
+    }}
+    [data-baseweb="popover"] {{
+      background:#ffffff !important;
+      color:#182033 !important;
+    }}
+    [data-baseweb="popover"] * {{
+      color:#182033 !important;
+    }}
+
+    /* Streamlit buttons */
+    .stButton > button {{
+      min-height:36px !important;
+      border-radius:9px !important;
+      border:1px solid var(--border) !important;
+      background:var(--surface) !important;
+      color:var(--text) !important;
+      font-size:12px !important;
+      font-weight:600 !important;
+    }}
+    .stButton > button:hover {{
+      border-color:var(--accent) !important;
+      color:var(--text) !important;
+    }}
+    .stButton > button[kind="primary"] {{
+      background:var(--accent) !important;
+      color:#fff !important;
+      border-color:var(--accent) !important;
+    }}
+
+    [data-testid="stExpander"] {{
+      border:1px solid var(--border) !important;
+      border-radius:12px !important;
+      background:var(--surface) !important;
+    }}
+    [data-testid="stExpander"] summary {{
+      color:var(--text) !important;
+      font-weight:650 !important;
+    }}
     </style>
     """, unsafe_allow_html=True)
 
@@ -265,20 +372,20 @@ with top1:
     </div>
     """, unsafe_allow_html=True)
 with top2:
-    theme = st.selectbox("Theme", list(THEMES.keys()), index=list(THEMES.keys()).index(st.session_state.theme), key="theme_selector")
+    theme = st.selectbox("Theme", list(THEMES.keys()), index=list(THEMES.keys()).index(st.session_state.theme), key="theme_selector", label_visibility="visible")
     if theme != st.session_state.theme:
         st.session_state.theme = theme
         st.rerun()
 
 # ---------- Navigation ----------
 pages = ["Dashboard", "Home", "Office", "Outside", "Personal Goals", "Urgent", "Upcoming", "Completed"]
-page = st.segmented_control(
+page = st.radio(
     "Navigation",
     pages,
-    default="Dashboard",
+    index=0,
     key="page_nav",
+    horizontal=True,
     label_visibility="collapsed",
-    width="stretch",
 )
 
 
@@ -409,10 +516,6 @@ if page == "Dashboard":
                 f'<div class="metric"><div class="metric-num">{icon}</div><div class="metric-label">{cat} · {count} pending</div></div>',
                 unsafe_allow_html=True
             )
-            if st.button(f"Open {cat}", key=f"open_cat_{cat}", use_container_width=True):
-                st.session_state["page_nav"] = cat
-                st.rerun()
-
 
     st.markdown('<div class="section-title">Next Up</div>', unsafe_allow_html=True)
     for i,t in enumerate(sorted(upcoming, key=lambda x: parse_due(x) or datetime.max)[:6]):
