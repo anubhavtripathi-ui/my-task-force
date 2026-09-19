@@ -236,6 +236,27 @@ def inject_css():
       color:#172033 !important;
     }}
 
+    /* In-app notifications */
+    .notification-bar {
+      display:flex !important;
+      justify-content:space-between !important;
+      align-items:center !important;
+      gap:12px !important;
+      padding:9px 12px !important;
+      margin:0 0 8px !important;
+      border:1px solid rgba(255,193,7,.45) !important;
+      border-radius:10px !important;
+      background:rgba(255,193,7,.10) !important;
+      color:var(--text) !important;
+      font-size:12px !important;
+    }
+    .notification-bar.quiet {
+      border-color:var(--border) !important;
+      background:var(--surface) !important;
+      color:var(--muted) !important;
+    }
+    .notification-bar span { color:var(--muted) !important; }
+
     /* Section / metrics */
     .section-title {{
       font-size:18px !important;
