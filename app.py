@@ -191,10 +191,24 @@ def inject_css():
     }}
 
     /* Date/time controls: force readable text even in dark browser/OS modes. */
+    /* Streamlit date/time controls can render the visible value as nested
+       segmented elements rather than a plain input. Force the foreground
+       on the entire widget tree so Dark Neon and Glass remain readable. */
+    [data-testid="stDateInput"],
+    [data-testid="stTimeInput"] {{
+      color:var(--control-text) !important;
+      opacity:1 !important;
+    }}
+    [data-testid="stDateInput"] *,
+    [data-testid="stTimeInput"] * {{
+      color:var(--control-text) !important;
+      -webkit-text-fill-color:var(--control-text) !important;
+      opacity:1 !important;
+    }}
     [data-testid="stDateInput"] input,
     [data-testid="stTimeInput"] input,
-    input[type="date"],
-    input[type="time"] {{
+    [data-testid="stDateInput"] [data-baseweb="input"],
+    [data-testid="stTimeInput"] [data-baseweb="input"] {{
       background:var(--control-bg) !important;
       color:var(--control-text) !important;
       -webkit-text-fill-color:var(--control-text) !important;
@@ -206,6 +220,7 @@ def inject_css():
     [data-testid="stTimeInput"] svg {{
       color:var(--control-text) !important;
       fill:var(--control-text) !important;
+      opacity:1 !important;
     }}
 
     [data-baseweb="popover"] {{
