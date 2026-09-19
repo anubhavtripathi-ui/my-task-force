@@ -237,7 +237,7 @@ def inject_css():
     }}
 
     /* In-app notifications */
-    .notification-bar {
+    .notification-bar {{
       display:flex !important;
       justify-content:space-between !important;
       align-items:center !important;
@@ -249,13 +249,13 @@ def inject_css():
       background:rgba(255,193,7,.10) !important;
       color:var(--text) !important;
       font-size:12px !important;
-    }
-    .notification-bar.quiet {
+    }}
+    .notification-bar.quiet {{
       border-color:var(--border) !important;
       background:var(--surface) !important;
       color:var(--muted) !important;
-    }
-    .notification-bar span { color:var(--muted) !important; }
+    }}
+    .notification-bar span {{ color:var(--muted) !important; }}
 
     /* Section / metrics */
     .section-title {{
