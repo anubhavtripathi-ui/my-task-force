@@ -1,5 +1,7 @@
 import os
-from datetime import datetime, date, time, timedelta
+from datetime import datetime, date, time, timedelta, timezone
+from zoneinfo import ZoneInfo
+import requests
 import streamlit as st
 from supabase import create_client, Client
 
@@ -26,6 +28,8 @@ st.set_page_config(
 SUPABASE_URL = st.secrets.get("SUPABASE_URL", os.getenv("SUPABASE_URL", ""))
 SUPABASE_KEY = st.secrets.get("SUPABASE_KEY", os.getenv("SUPABASE_KEY", ""))
 APP_PIN = str(st.secrets.get("APP_PIN", os.getenv("APP_PIN", "1234")))
+NTFY_TOPIC = str(st.secrets.get("NTFY_TOPIC", os.getenv("NTFY_TOPIC", ""))).strip()
+IST = ZoneInfo("Asia/Kolkata")
 
 CATEGORIES = {
     "Home": "🏠",
@@ -365,6 +369,48 @@ def get_supabase() -> Client | None:
 
 supabase = get_supabase()
 
+def local_now():
+    return datetime.now(IST)
+
+def schedule_reminder(task_id, title, due_at):
+    """Schedule a phone/desktop push reminder through ntfy, if configured."""
+    if not NTFY_TOPIC or not due_at:
+        return False
+    try:
+        if due_at.tzinfo is None:
+            due_at = due_at.replace(tzinfo=IST)
+        reminder_at = due_at - timedelta(minutes=15)
+        now = datetime.now(timezone.utc)
+        if reminder_at <= datetime.now(IST):
+            if due_at > datetime.now(IST):
+                headers = {"In": "10s", "Title": "⚡ My Task Force reminder", "Priority": "4"}
+            else:
+                return False
+        else:
+            delay_seconds = (reminder_at.astimezone(timezone.utc) - now).total_seconds()
+            # ntfy supports delayed delivery for up to 3 days.
+            if delay_seconds > 3 * 24 * 60 * 60:
+                return False
+            headers = {
+                "At": str(int(reminder_at.timestamp())),
+                "Title": "⚡ My Task Force reminder",
+                "Priority": "4",
+            }
+        url = f"https://ntfy.sh/{NTFY_TOPIC}/task-{task_id}"
+        response = requests.post(url, data=f"{title} — due {due_at.astimezone(IST).strftime('%d %b, %I:%M %p')}".encode("utf-8"), headers=headers, timeout=10)
+        response.raise_for_status()
+        return True
+    except Exception:
+        return False
+
+def cancel_reminder(task_id):
+    if not NTFY_TOPIC:
+        return
+    try:
+        requests.delete(f"https://ntfy.sh/{NTFY_TOPIC}/task-{task_id}", timeout=10)
+    except Exception:
+        pass
+
 def db_error_message():
     st.error("Supabase is not connected. Add SUPABASE_URL and SUPABASE_KEY in Streamlit Secrets, then reload.")
 
@@ -383,7 +429,7 @@ def add_task(title, category, priority, due_date, due_time, description):
         db_error_message(); return
     due_at = None
     if due_date:
-        dt = datetime.combine(due_date, due_time or time(23,59))
+        dt = datetime.combine(due_date, due_time or time(23,59)).replace(tzinfo=IST)
         due_at = dt.isoformat()
     data = {
         "title": title.strip(),
@@ -393,7 +439,10 @@ def add_task(title, category, priority, due_date, due_time, description):
         "due_at": due_at,
         "status": "todo",
     }
-    supabase.table("tasks").insert(data).execute()
+    result = supabase.table("tasks").insert(data).execute()
+    created = (result.data or [None])[0]
+    if created:
+        schedule_reminder(created.get("id"), created.get("title", title), parse_due(created))
 
 def update_task(task_id, **fields):
     if not supabase:
@@ -440,7 +489,10 @@ def parse_due(task):
     if not raw:
         return None
     try:
-        return datetime.fromisoformat(raw.replace("Z", "+00:00")).replace(tzinfo=None)
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            return parsed.replace(tzinfo=IST)
+        return parsed.astimezone(IST)
     except Exception:
         return None
 
@@ -450,7 +502,7 @@ def visible_tasks(page_name):
     if page_name == "Urgent":
         return [t for t in tasks if t.get("priority") == "urgent" and t.get("status") != "completed"]
     if page_name == "Upcoming":
-        now = datetime.now()
+        now = local_now()
         return [t for t in tasks if t.get("status") != "completed" and parse_due(t) and parse_due(t) >= now]
     if page_name == "Completed":
         return [t for t in tasks if t.get("status") == "completed"]
@@ -479,7 +531,8 @@ def task_card(task, key_prefix):
     with a:
         if task.get("status") != "completed":
             if st.button("✓ Complete", key=f"done_{key_prefix}_{tid}", use_container_width=True):
-                update_task(tid, status="completed", completed_at=datetime.now().isoformat())
+                update_task(tid, status="completed", completed_at=local_now().isoformat())
+                cancel_reminder(tid)
                 st.rerun()
         else:
             if st.button("↩ Restore", key=f"restore_{key_prefix}_{tid}", use_container_width=True):
@@ -487,14 +540,16 @@ def task_card(task, key_prefix):
                 st.rerun()
     with b:
         if st.button("⏰ Snooze", key=f"snooze_{key_prefix}_{tid}", use_container_width=True):
-            new_due = datetime.now() + timedelta(hours=1)
+            new_due = local_now() + timedelta(hours=1)
             update_task(tid, due_at=new_due.isoformat())
+            schedule_reminder(tid, task.get("title", ""), new_due)
             st.rerun()
     with c:
         if st.button("✏ Edit", key=f"edit_{key_prefix}_{tid}", use_container_width=True):
             st.session_state[f"editing_{tid}"] = True
     with d:
         if st.button("🗑 Delete", key=f"del_{key_prefix}_{tid}", use_container_width=True):
+            cancel_reminder(tid)
             delete_task(tid)
             st.rerun()
 
@@ -512,6 +567,7 @@ def task_card(task, key_prefix):
 # ---------- Add task ----------
 with st.expander("＋ New Task / 🎤 Speak Task", expanded=False):
     st.caption("Typing is the reliable V1 input. Voice capture/transcription can be added later without changing the database structure.")
+    st.caption("🔔 Reminder: 15 minutes before the due time. Phone/desktop notification works even when this app is not open, after NTFY_TOPIC is configured.")
     with st.form("new_task_form", clear_on_submit=True):
         c1,c2 = st.columns([2,1])
         with c1:
@@ -537,7 +593,7 @@ if page == "Dashboard":
     pending = [t for t in tasks if t.get("status") != "completed"]
     completed = [t for t in tasks if t.get("status") == "completed"]
     urgent = [t for t in pending if t.get("priority") == "urgent"]
-    upcoming = [t for t in pending if parse_due(t) and parse_due(t) >= datetime.now()]
+    upcoming = [t for t in pending if parse_due(t) and parse_due(t) >= local_now()]
     total = len(pending) + len(completed)
     pct = round((len(completed)/total)*100) if total else 0
 
