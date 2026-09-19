@@ -189,6 +189,25 @@ def inject_css():
       color:#7a8597 !important;
       opacity:1 !important;
     }}
+
+    /* Date/time controls: force readable text even in dark browser/OS modes. */
+    [data-testid="stDateInput"] input,
+    [data-testid="stTimeInput"] input,
+    input[type="date"],
+    input[type="time"] {{
+      background:var(--control-bg) !important;
+      color:var(--control-text) !important;
+      -webkit-text-fill-color:var(--control-text) !important;
+      color-scheme:light !important;
+      opacity:1 !important;
+      border:1px solid #cbd3df !important;
+    }}
+    [data-testid="stDateInput"] svg,
+    [data-testid="stTimeInput"] svg {{
+      color:var(--control-text) !important;
+      fill:var(--control-text) !important;
+    }}
+
     [data-baseweb="popover"] {{
       background:#ffffff !important;
       color:#172033 !important;
