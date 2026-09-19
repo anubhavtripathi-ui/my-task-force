@@ -11,6 +11,8 @@ jobs:
     permissions:
       contents: read
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
       - name: Run reminder scheduler
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
