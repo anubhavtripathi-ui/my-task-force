@@ -6,7 +6,7 @@ import streamlit as st
 from supabase import create_client, Client
 
 # =========================
-# My Task Force - V1
+# My Task Force - V2 Premium Command UI
 # =========================
 # For GitHub/Streamlit Cloud:
 # Add these in Streamlit Cloud > Settings > Secrets
@@ -39,19 +39,19 @@ CATEGORIES = {
 }
 THEMES = {
     "Dark Neon": {
-        "bg": "#0b1020", "panel": "#121a2f", "card": "#17213a",
-        "text": "#f5f7ff", "muted": "#9aa6c2", "accent": "#7c5cff",
-        "accent2": "#00d4ff", "danger": "#ff5c8a", "border": "#273454"
+        "bg": "#0d1322", "panel": "#151d31", "card": "#18233a",
+        "text": "#eef2ff", "muted": "#9aa8bf", "accent": "#55c9a5",
+        "accent2": "#7b8ff2", "danger": "#e06a63", "border": "#2b3850"
     },
     "Modern Light": {
-        "bg": "#f4f7fb", "panel": "#ffffff", "card": "#ffffff",
-        "text": "#162033", "muted": "#68748a", "accent": "#635bff",
-        "accent2": "#00a8cc", "danger": "#e5486d", "border": "#dfe5ef"
+        "bg": "#f4f3ef", "panel": "#fffdf9", "card": "#ffffff",
+        "text": "#202838", "muted": "#707a8b", "accent": "#2f9d7d",
+        "accent2": "#5d78cf", "danger": "#d85b50", "border": "#dedbd3"
     },
     "Glass Gradient": {
-        "bg": "#111124", "panel": "rgba(255,255,255,.08)", "card": "rgba(255,255,255,.10)",
-        "text": "#ffffff", "muted": "#b7b8d6", "accent": "#b06cff",
-        "accent2": "#37e5ff", "danger": "#ff6f9d", "border": "rgba(255,255,255,.15)"
+        "bg": "#0d1020", "panel": "rgba(255,255,255,.075)", "card": "rgba(255,255,255,.09)",
+        "text": "#f5f7ff", "muted": "#aeb7ca", "accent": "#70d7c1",
+        "accent2": "#c28cf2", "danger": "#e47a83", "border": "rgba(255,255,255,.16)"
     },
 }
 
@@ -67,23 +67,23 @@ def inject_css():
     dark = st.session_state.theme == "Dark Neon"
 
     if glass:
-        app_bg = "linear-gradient(135deg,#111425 0%,#17152d 45%,#10263a 100%)"
-        surface = "rgba(255,255,255,.075)"
+        app_bg = "radial-gradient(circle at 15% 0%, rgba(112,215,193,.10), transparent 32%), radial-gradient(circle at 90% 20%, rgba(194,140,242,.10), transparent 30%), linear-gradient(135deg,#0b0f1d 0%,#111629 52%,#0d1720 100%)"
+        surface = "rgba(255,255,255,.065)"
         control_bg = "#f7f8fb"
-        control_text = "#182033"
-        border = "rgba(255,255,255,.18)"
-    elif dark:
-        app_bg = "#080d18"
-        surface = "#111827"
-        control_bg = "#f5f7fa"
         control_text = "#172033"
-        border = "#2b3852"
+        border = "rgba(255,255,255,.16)"
+    elif dark:
+        app_bg = "linear-gradient(145deg,#0b101c 0%,#0f1727 55%,#101827 100%)"
+        surface = "#151e31"
+        control_bg = "#f7f8fb"
+        control_text = "#172033"
+        border = "#2a3851"
     else:
-        app_bg = "#f5f7fb"
-        surface = "#ffffff"
+        app_bg = "linear-gradient(145deg,#f5f4ef 0%,#f7f6f2 55%,#f1f0eb 100%)"
+        surface = "#fffdf9"
         control_bg = "#ffffff"
         control_text = "#172033"
-        border = "#d9e0ea"
+        border = "#dedbd3"
 
     st.markdown(f"""
     <style>
@@ -92,270 +92,113 @@ def inject_css():
       --text:{t["text"]}; --muted:{t["muted"]}; --accent:{t["accent"]};
       --accent2:{t["accent2"]}; --danger:{t["danger"]};
       --border:{border}; --control-bg:{control_bg}; --control-text:{control_text};
+      --radius:14px;
     }}
 
-    .stApp {{
-      background:var(--bg) !important;
-      color:var(--text) !important;
-    }}
-
+    .stApp {{ background:var(--bg) !important; color:var(--text) !important; }}
     [data-testid="stMainBlockContainer"] {{
-      max-width:1380px !important;
-      padding-top:.8rem !important;
-      padding-bottom:1.5rem !important;
-      padding-left:1.2rem !important;
-      padding-right:1.2rem !important;
+      max-width:1420px !important; padding-top:.65rem !important;
+      padding-bottom:2rem !important; padding-left:1.35rem !important; padding-right:1.35rem !important;
     }}
+    [data-testid="stHeader"] {{ background:transparent !important; height:2.5rem !important; }}
+    h1,h2,h3,h4,h5,p,span,label,[data-testid="stMarkdownContainer"] {{ color:var(--text) !important; }}
 
-    [data-testid="stHeader"] {{ background:transparent !important; }}
-
-    h1,h2,h3,h4,h5,p,span,label,
-    [data-testid="stMarkdownContainer"] {{
-      color:var(--text) !important;
-    }}
-
-    /* Header */
     .hero {{
-      padding:15px 19px !important;
-      border:1px solid var(--border) !important;
-      border-radius:15px !important;
-      background:linear-gradient(110deg,rgba(99,91,255,.18),rgba(0,168,204,.07)) !important;
-      margin-bottom:9px !important;
+      padding:14px 17px !important; border:1px solid var(--border) !important;
+      border-radius:var(--radius) !important; background:var(--surface) !important;
+      margin-bottom:10px !important; box-shadow:0 10px 28px rgba(0,0,0,.06) !important;
     }}
-    .hero-title {{
-      font-size:26px !important;
-      line-height:1.1 !important;
-      font-weight:800 !important;
-      letter-spacing:-.5px !important;
-    }}
-    .hero-sub {{
-      color:var(--muted) !important;
-      margin-top:3px !important;
-      font-size:12px !important;
-    }}
+    .hero-title {{ font-size:25px !important; line-height:1.08 !important; font-weight:780 !important; letter-spacing:-.7px !important; }}
+    .hero-sub {{ color:var(--muted) !important; margin-top:4px !important; font-size:11px !important; letter-spacing:.2px !important; }}
 
-    /* Navigation */
     div[role="radiogroup"] {{
-      display:flex !important;
-      flex-wrap:nowrap !important;
-      gap:2px !important;
-      width:100% !important;
-      padding:3px !important;
-      margin:2px 0 10px !important;
-      border:1px solid var(--border) !important;
-      border-radius:11px !important;
-      background:var(--surface) !important;
+      display:flex !important; flex-wrap:nowrap !important; gap:4px !important; width:100% !important;
+      padding:4px !important; margin:3px 0 12px !important; border:1px solid var(--border) !important;
+      border-radius:12px !important; background:var(--surface) !important; box-shadow:0 7px 20px rgba(0,0,0,.05) !important;
     }}
     div[role="radiogroup"] > label {{
-      flex:1 1 0 !important;
-      justify-content:center !important;
-      min-height:32px !important;
-      padding:4px 7px !important;
-      border-radius:8px !important;
-      color:var(--text) !important;
-      background:transparent !important;
-      font-size:11px !important;
-      font-weight:650 !important;
-      cursor:pointer !important;
+      flex:1 1 0 !important; justify-content:center !important; min-height:34px !important;
+      padding:5px 8px !important; border-radius:9px !important; color:var(--muted) !important;
+      background:transparent !important; font-size:11px !important; font-weight:650 !important; cursor:pointer !important;
+      transition:all .16s ease !important;
     }}
-    div[role="radiogroup"] > label:hover {{
-      background:rgba(99,91,255,.13) !important;
-    }}
+    div[role="radiogroup"] > label:hover {{ background:rgba(85,201,165,.08) !important; color:var(--text) !important; }}
     div[role="radiogroup"] > label:has(input:checked) {{
-      background:var(--accent) !important;
-      color:#fff !important;
+      background:var(--accent) !important; color:#07151a !important; box-shadow:0 4px 12px rgba(85,201,165,.18) !important;
     }}
-    div[role="radiogroup"] > label:has(input:checked) * {{
-      color:#fff !important;
-    }}
-    div[role="radiogroup"] > label > div:first-child {{
-      display:none !important;
-    }}
+    div[role="radiogroup"] > label:has(input:checked) * {{ color:#07151a !important; }}
+    div[role="radiogroup"] > label > div:first-child {{ display:none !important; }}
 
-    /* Theme selector and all inputs */
-    div[data-baseweb="select"] > div,
-    div[data-baseweb="input"],
-    textarea,
-    input {{
-      background:var(--control-bg) !important;
-      color:var(--control-text) !important;
-      border:1px solid #cbd3df !important;
-      border-radius:9px !important;
+    div[data-baseweb="select"] > div, div[data-baseweb="input"], textarea, input {{
+      background:var(--control-bg) !important; color:var(--control-text) !important;
+      border:1px solid #cbd3df !important; border-radius:10px !important; box-shadow:none !important;
     }}
-    div[data-baseweb="select"] *,
-    div[data-baseweb="input"] *,
-    textarea,
-    input {{
-      color:var(--control-text) !important;
-    }}
-    textarea::placeholder,
-    input::placeholder {{
-      color:#7a8597 !important;
-      opacity:1 !important;
-    }}
+    div[data-baseweb="select"] *, div[data-baseweb="input"] *, textarea, input {{ color:var(--control-text) !important; }}
+    textarea::placeholder, input::placeholder {{ color:#7a8597 !important; opacity:1 !important; }}
 
-    /* Date/time controls: force readable text even in dark browser/OS modes. */
-    /* Streamlit date/time controls can render the visible value as nested
-       segmented elements rather than a plain input. Force the foreground
-       on the entire widget tree so Dark Neon and Glass remain readable. */
-    [data-testid="stDateInput"],
-    [data-testid="stTimeInput"] {{
-      color:var(--control-text) !important;
-      opacity:1 !important;
+    [data-testid="stDateInput"], [data-testid="stTimeInput"] {{ color:var(--control-text) !important; opacity:1 !important; }}
+    [data-testid="stDateInput"] *, [data-testid="stTimeInput"] * {{
+      color:var(--control-text) !important; -webkit-text-fill-color:var(--control-text) !important; opacity:1 !important;
     }}
-    [data-testid="stDateInput"] *,
-    [data-testid="stTimeInput"] * {{
-      color:var(--control-text) !important;
-      -webkit-text-fill-color:var(--control-text) !important;
-      opacity:1 !important;
+    [data-testid="stDateInput"] input, [data-testid="stTimeInput"] input,
+    [data-testid="stDateInput"] [data-baseweb="input"], [data-testid="stTimeInput"] [data-baseweb="input"] {{
+      background:var(--control-bg) !important; color:var(--control-text) !important;
+      -webkit-text-fill-color:var(--control-text) !important; color-scheme:light !important;
+      opacity:1 !important; border:1px solid #cbd3df !important;
     }}
-    [data-testid="stDateInput"] input,
-    [data-testid="stTimeInput"] input,
-    [data-testid="stDateInput"] [data-baseweb="input"],
-    [data-testid="stTimeInput"] [data-baseweb="input"] {{
-      background:var(--control-bg) !important;
-      color:var(--control-text) !important;
-      -webkit-text-fill-color:var(--control-text) !important;
-      color-scheme:light !important;
-      opacity:1 !important;
-      border:1px solid #cbd3df !important;
-    }}
-    [data-testid="stDateInput"] svg,
-    [data-testid="stTimeInput"] svg {{
-      color:var(--control-text) !important;
-      fill:var(--control-text) !important;
-      opacity:1 !important;
-    }}
+    [data-testid="stDateInput"] svg, [data-testid="stTimeInput"] svg {{ color:var(--control-text) !important; fill:var(--control-text) !important; opacity:1 !important; }}
+    [data-baseweb="popover"] {{ background:#ffffff !important; color:#172033 !important; border:1px solid #d7dee8 !important; }}
+    [data-baseweb="popover"] * {{ color:#172033 !important; }}
 
-    [data-baseweb="popover"] {{
-      background:#ffffff !important;
-      color:#172033 !important;
-      border:1px solid #d7dee8 !important;
-    }}
-    [data-baseweb="popover"] * {{
-      color:#172033 !important;
-    }}
-
-    /* In-app notifications */
     .notification-bar {{
-      display:flex !important;
-      justify-content:space-between !important;
-      align-items:center !important;
-      gap:12px !important;
-      padding:9px 12px !important;
-      margin:0 0 8px !important;
-      border:1px solid rgba(255,193,7,.45) !important;
-      border-radius:10px !important;
-      background:rgba(255,193,7,.10) !important;
-      color:var(--text) !important;
-      font-size:12px !important;
+      display:flex !important; justify-content:space-between !important; align-items:center !important; gap:12px !important;
+      padding:9px 12px !important; margin:0 0 9px !important; border:1px solid rgba(224,106,99,.42) !important;
+      border-radius:10px !important; background:rgba(224,106,99,.08) !important; color:var(--text) !important; font-size:11px !important;
     }}
-    .notification-bar.quiet {{
-      border-color:var(--border) !important;
-      background:var(--surface) !important;
-      color:var(--muted) !important;
-    }}
+    .notification-bar.quiet {{ border-color:var(--border) !important; background:var(--surface) !important; }}
     .notification-bar span {{ color:var(--muted) !important; }}
 
-    /* Section / metrics */
     .section-title {{
-      font-size:18px !important;
-      font-weight:750 !important;
-      margin:11px 0 6px !important;
-      color:var(--text) !important;
+      font-size:17px !important; font-weight:760 !important; margin:12px 0 7px !important;
+      color:var(--text) !important; letter-spacing:-.2px !important;
     }}
     .metric {{
-      border:1px solid var(--border) !important;
-      border-radius:12px !important;
-      padding:10px 12px !important;
-      background:var(--surface) !important;
-      min-height:68px !important;
+      border:1px solid var(--border) !important; border-radius:13px !important; padding:11px 13px !important;
+      background:var(--surface) !important; min-height:72px !important; box-shadow:0 7px 20px rgba(0,0,0,.045) !important;
     }}
-    .metric-num {{
-      font-size:21px !important;
-      line-height:1.05 !important;
-      font-weight:800 !important;
-    }}
-    .metric-label {{
-      color:var(--muted) !important;
-      font-size:11px !important;
-      margin-top:3px !important;
-    }}
+    .metric-num {{ font-size:21px !important; line-height:1.05 !important; font-weight:780 !important; }}
+    .metric-label {{ color:var(--muted) !important; font-size:10px !important; margin-top:4px !important; letter-spacing:.15px !important; }}
 
-    /* Tasks */
     .task-card {{
-      border:1px solid var(--border) !important;
-      border-radius:13px !important;
-      padding:11px 13px !important;
-      background:var(--surface) !important;
-      margin:5px 0 !important;
-      box-shadow:0 4px 14px rgba(0,0,0,.07) !important;
+      border:1px solid var(--border) !important; border-radius:13px !important; padding:11px 13px !important;
+      background:var(--surface) !important; margin:5px 0 !important; box-shadow:0 7px 20px rgba(0,0,0,.045) !important;
     }}
-    .task-title {{
-      font-size:15px !important;
-      font-weight:700 !important;
-      color:var(--text) !important;
-      margin-top:5px !important;
-    }}
-    .task-desc {{
-      color:var(--muted) !important;
-      font-size:12px !important;
-      margin-top:3px !important;
-    }}
-    .task-meta {{
-      color:var(--muted) !important;
-      font-size:10px !important;
-      margin-top:6px !important;
-    }}
-    .urgent {{
-      border-color:rgba(255,92,138,.65) !important;
-    }}
+    .task-title {{ font-size:14px !important; font-weight:720 !important; color:var(--text) !important; margin-top:5px !important; }}
+    .task-desc {{ color:var(--muted) !important; font-size:11px !important; margin-top:3px !important; line-height:1.45 !important; }}
+    .task-meta {{ color:var(--muted) !important; font-size:9px !important; margin-top:7px !important; }}
+    .urgent {{ border-color:rgba(224,106,99,.55) !important; }}
     .chip {{
-      display:inline-block !important;
-      padding:3px 7px !important;
-      border-radius:999px !important;
-      background:rgba(99,91,255,.14) !important;
-      color:var(--text) !important;
-      font-size:9px !important;
-      border:1px solid var(--border) !important;
+      display:inline-block !important; padding:3px 7px !important; border-radius:999px !important;
+      background:rgba(85,201,165,.09) !important; color:var(--muted) !important; font-size:8px !important;
+      letter-spacing:.55px !important; border:1px solid var(--border) !important;
     }}
 
-    /* Buttons */
     .stButton > button {{
-      min-height:34px !important;
-      padding:5px 9px !important;
-      border-radius:8px !important;
-      border:1px solid var(--border) !important;
-      background:var(--surface) !important;
-      color:var(--text) !important;
-      font-size:11px !important;
-      font-weight:650 !important;
+      min-height:34px !important; padding:5px 10px !important; border-radius:9px !important;
+      border:1px solid var(--border) !important; background:var(--surface) !important; color:var(--text) !important;
+      font-size:10px !important; font-weight:680 !important; box-shadow:none !important;
     }}
-    .stButton > button:hover {{
-      border-color:var(--accent) !important;
-      color:var(--text) !important;
-    }}
-    .stButton > button[kind="primary"] {{
-      background:var(--accent) !important;
-      color:#fff !important;
-      border-color:var(--accent) !important;
-    }}
+    .stButton > button:hover {{ border-color:var(--accent) !important; color:var(--text) !important; transform:translateY(-1px) !important; }}
+    .stButton > button[kind="primary"] {{ background:var(--accent) !important; color:#07151a !important; border-color:var(--accent) !important; }}
 
-    /* Add-task panel */
     [data-testid="stExpander"] {{
-      border:1px solid var(--border) !important;
-      border-radius:11px !important;
-      background:var(--surface) !important;
-      margin-bottom:8px !important;
+      border:1px solid var(--border) !important; border-radius:12px !important; background:var(--surface) !important;
+      margin-bottom:9px !important; box-shadow:0 7px 20px rgba(0,0,0,.04) !important;
     }}
-    [data-testid="stExpander"] summary {{
-      color:var(--text) !important;
-      font-size:13px !important;
-      font-weight:650 !important;
-    }}
-    [data-testid="stCaptionContainer"] p {{
-      color:var(--muted) !important;
-    }}
+    [data-testid="stExpander"] summary {{ color:var(--text) !important; font-size:12px !important; font-weight:680 !important; }}
+    [data-testid="stCaptionContainer"] p {{ color:var(--muted) !important; }}
+    [data-testid="stAlert"] {{ border-radius:10px !important; border:1px solid var(--border) !important; }}
+    hr {{ border-color:var(--border) !important; }}
     </style>
     """, unsafe_allow_html=True)
 
