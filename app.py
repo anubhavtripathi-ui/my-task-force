@@ -509,33 +509,121 @@ if page == "Dashboard":
     completed = [t for t in tasks if t.get("status") == "completed"]
     urgent = [t for t in pending if t.get("priority") == "urgent"]
     upcoming = [t for t in pending if parse_due(t) and parse_due(t) >= local_now()]
+    overdue = [t for t in pending if parse_due(t) and parse_due(t) < local_now()]
     total = len(pending) + len(completed)
     pct = round((len(completed)/total)*100) if total else 0
 
-    st.markdown('<div class="section-title">Today’s Command Center</div>', unsafe_allow_html=True)
-    m1,m2,m3,m4 = st.columns(4)
-    for col, num, label in [
-        (m1, len(pending), "To Do"),
-        (m2, len(urgent), "⭐ Urgent"),
-        (m3, len(upcoming), "Upcoming"),
-        (m4, f"{pct}%", "Completed"),
-    ]:
-        with col:
-            st.markdown(f'<div class="metric"><div class="metric-num">{num}</div><div class="metric-label">{label}</div></div>', unsafe_allow_html=True)
+    now = local_now()
+    greeting = "Good morning" if now.hour < 12 else ("Good afternoon" if now.hour < 17 else "Good evening")
+    today_text = now.strftime("%A, %d %B %Y")
 
-    st.markdown('<div class="section-title">Quick Access</div>', unsafe_allow_html=True)
-    cols = st.columns(4)
-    for col, (cat, icon) in zip(cols, CATEGORIES.items()):
-        count = len([t for t in pending if t.get("category") == cat])
+    st.markdown(
+        f'''<div class="cockpit-hero">
+          <div class="cockpit-kicker">Today's briefing</div>
+          <div class="cockpit-title">{greeting}.<br>Let's make today count.</div>
+          <div class="cockpit-copy">A focused command view of your workload, deadlines and next actions. Keep the next move small and visible.</div>
+          <div class="cockpit-meta">{today_text} · {len(pending)} active tasks · {len(overdue)} overdue · {len(urgent)} urgent</div>
+        </div>''',
+        unsafe_allow_html=True
+    )
+
+    # Build three priority cards from actual task data rather than invented content.
+    priority_tasks = sorted(
+        pending,
+        key=lambda t: (
+            0 if t.get("priority") == "urgent" else 1,
+            parse_due(t) or datetime.max
+        )
+    )[:3]
+
+    st.markdown('<div class="priority-label">What needs your attention</div>', unsafe_allow_html=True)
+    pcols = st.columns(3)
+    if priority_tasks:
+        for idx, (col, task) in enumerate(zip(pcols, priority_tasks), start=1):
+            due = parse_due(task)
+            due_text = due.strftime("%d %b · %I:%M %p") if due else "No due time"
+            desc = (task.get("description") or "").replace("<","&lt;").replace(">","&gt;")
+            with col:
+                st.markdown(
+                    f'''<div class="priority-card">
+                      <div class="priority-num">{idx}</div>
+                      <div class="priority-title">{task.get("title","Untitled")}</div>
+                      <div class="priority-copy">{desc or "No additional details."}</div>
+                      <div class="priority-meta">{task.get("category","")} · {due_text}</div>
+                    </div>''',
+                    unsafe_allow_html=True
+                )
+    else:
+        for col in pcols:
+            with col:
+                st.markdown(
+                    '<div class="priority-card"><div class="priority-num">—</div><div class="priority-title">No priority task yet</div><div class="priority-copy">Add a task with a due time or urgent priority and it will appear here.</div><div class="priority-meta">READY FOR INPUT</div></div>',
+                    unsafe_allow_html=True
+                )
+
+    kcols = st.columns(5)
+    kpis = [
+        (len(pending), "Active tasks", "on your plate"),
+        (len(urgent), "Urgent", "needs focus"),
+        (len(upcoming), "Upcoming", "next up"),
+        (len(overdue), "Overdue", "needs action"),
+        (f"{pct}%", "Completed", "all-time progress"),
+    ]
+    for col, (value, label, note) in zip(kcols, kpis):
         with col:
             st.markdown(
-                f'<div class="metric"><div class="metric-num">{icon}</div><div class="metric-label">{cat} · {count} pending</div></div>',
+                f'<div class="cockpit-kpi"><div class="cockpit-kpi-label">{label}</div><div class="cockpit-kpi-value">{value}</div><div class="cockpit-kpi-note">{note}</div></div>',
                 unsafe_allow_html=True
             )
 
-    st.markdown('<div class="section-title">Next Up</div>', unsafe_allow_html=True)
-    for i,t in enumerate(sorted(upcoming, key=lambda x: parse_due(x) or datetime.max)[:6]):
-        task_card(t, f"dash_{i}")
+    st.markdown('<div style="height:10px"></div>', unsafe_allow_html=True)
+    left, right = st.columns([1.35, 1], gap="medium")
+
+    with left:
+        st.markdown(
+            f'<div class="cockpit-panel"><div class="cockpit-panel-title">Today, prepared</div><div class="cockpit-panel-note">Next actions ordered by urgency and due time</div>',
+            unsafe_allow_html=True
+        )
+        next_tasks = sorted(
+            pending,
+            key=lambda t: (
+                0 if t.get("priority") == "urgent" else 1,
+                parse_due(t) or datetime.max
+            )
+        )[:6]
+        if next_tasks:
+            for task in next_tasks:
+                due = parse_due(task)
+                time_text = due.strftime("%I:%M %p") if due else "—"
+                due_note = due.strftime("%d %b") if due else "No due date"
+                st.markdown(
+                    f'''<div class="cockpit-task-row">
+                      <div class="cockpit-task-time">{time_text}</div>
+                      <div class="cockpit-task-title">{task.get("title","Untitled")}</div>
+                      <div class="cockpit-task-meta">{task.get("category","")} · {due_note} · {task.get("priority","normal").upper()}</div>
+                    </div>''',
+                    unsafe_allow_html=True
+                )
+        else:
+            st.markdown('<div class="cockpit-empty">Nothing queued. Add a task to populate your command view.</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with right:
+        st.markdown(
+            '<div class="cockpit-panel"><div class="cockpit-panel-title">By space</div><div class="cockpit-panel-note">Where your active work is sitting</div>',
+            unsafe_allow_html=True
+        )
+        for cat, icon in CATEGORIES.items():
+            cat_tasks = [t for t in pending if t.get("category") == cat]
+            cat_urgent = len([t for t in cat_tasks if t.get("priority") == "urgent"])
+            st.markdown(
+                f'''<div class="cockpit-task-row">
+                  <div class="cockpit-task-title">{icon} {cat}</div>
+                  <div class="cockpit-task-meta">{len(cat_tasks)} active · {cat_urgent} urgent</div>
+                </div>''',
+                unsafe_allow_html=True
+            )
+        st.markdown('</div>', unsafe_allow_html=True)
 
 else:
     heading_icon = CATEGORIES.get(page, {"Urgent":"⭐","Upcoming":"📅","Completed":"✅"}.get(page,"📌"))
